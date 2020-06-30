@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Author:Ashishkumar Bidap <br>
 # Course:Predictive Analytics<br>
 # FInal Project<br>
 # Clickstream data Analytics:E Commerce<br>
