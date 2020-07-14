@@ -6,5 +6,7 @@ As part of this project we are analyzing clickstream data for a large-scale ecom
 
 This data comprises a large collection of user visits to the European retailer’s website and records a sequence of events on users clicks. The data records the clickstream events for a period of six months in 2014 for the retailer website and also includes the buying events for some of the sessions thus describing more about the purchased items.
 
+Dataset : https://2015.recsyschallenge.com/challenge.html
+
 Source:
 1. (2015). Ben-Shimon, Tsikinovsky, Friedmann, Shapira, Rokach & Hoerle .RecSys Challenge 2015 and the YOOCHOOSE Dataset . Association of computing Machinery.10.1145/2792838.2798723
