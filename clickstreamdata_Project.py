@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Course:Predictive Analytics<br>
-# FInal Project<br>
 # Clickstream data Analytics:E Commerce<br>
-
-# In[1]:
-
 
 import pandas as pd
 import numpy as np
@@ -42,6 +37,8 @@ class Classifier:
         pass
     
     def file_input(self,filename):
+        
+        #Reading Input Data
         data = pd.read_csv(filename,engine='python',header=None)
         return data
     
@@ -53,6 +50,9 @@ class Classifier:
                 return 0
             
     def convertCategory(self,x):
+        """
+         Handle Category column in the clicks data.(Numerical Encoding 1-12 for Category of Items)
+        """
         if x == 'S':
             return -1
         elif x in ['1','2','3','4','5','6','7','8','9','10','11','12']:
@@ -61,7 +61,9 @@ class Classifier:
             return 13
     
     def data_exploration_clicks(self,clicks):
-        
+        """
+         Exploring & Visualizing the Clicks Input Data File. 
+        """
         category_analaysis = clicks[(clicks['category'].isin(['S','0','1','2','3','4','5','6','7','8','9','10','11','12']))]
       
         chart_4 = sns.barplot(x=category_analaysis['category'].value_counts().index, y=category_analaysis['category'].value_counts())
@@ -79,7 +81,10 @@ class Classifier:
         plt.show()
         
     def data_exploration_buys(self,data):
-        
+        """
+         Exploring & Visualizing the Buys Input Data File. 
+        """
+        #Top 10 Items which have been bought the maximum.
         print("Top 10 Items which have been bought the maximum.")
         #print(buys['item_id'].value_counts().nlargest(10))
         chart_1 = sns.barplot(x=buys['item_id'].value_counts().nlargest(10).index, y=buys['item_id'].value_counts().nlargest(10))
@@ -89,6 +94,7 @@ class Classifier:
         plt.title('Top 10 Items which have been bought the maximum.')
         plt.show()
         
+        #Top 10 items which are purchased in larger quantities.
         print("Top 10 items which are purchased in larger quantities.")
         quantity_analysis = buys[['item_id','qty']].groupby('item_id').agg(total_quantity=pd.NamedAgg(column='qty',aggfunc=sum))
         quant_analysis = quantity_analysis.sort_values('total_quantity',ascending=False).nlargest(10,columns='total_quantity')
@@ -99,6 +105,7 @@ class Classifier:
         plt.title('Top 10 items which are purchased in larger quantities.')
         plt.show()
         
+        #Top 10 items Identifying the items having the maximum price.
         print("Top 10 items Identifying the items having the maximum price.")
         buys_plot = buys[['item_id','price']].drop_duplicates().sort_values('price',ascending=False).nlargest(10,columns='price')
         chart_3 = sns.barplot(x = buys_plot['item_id'] , y = buys_plot['price'] ,data = buys_plot)
@@ -109,6 +116,12 @@ class Classifier:
         plt.show()
         
     def transforming_buys(self,buys):
+        """
+        Transform the Buys data
+        1.Grouping by session ID
+        2.Aggregrating count of items & unique items bought in each session
+        3.Labeling the Buys data with a target column
+        """
         print("Transforming the buys file ...!!!")
         grouped = buys.groupby("session")
         buys_g = pd.DataFrame(index=grouped.groups.keys())        
@@ -120,11 +133,25 @@ class Classifier:
         return buys_g
     
     def chunk_load_data(self,chunk):
+        """
+        As the dataset is huge,loading data in chunks.
+        """
         return chunk
         
         
     def transforming_clicks(self,clicks):
-        
+        """
+        Transform the clicks data
+        1.Grouping by session ID
+        2.Calculating 
+          -dwell time in each session
+          -special offer click
+          -Total number of clicks
+          -day of week
+          -day of month
+          -hour of click
+          -clickrate
+        """
         clicks_new = clicks.groupby('session')['timestamp'].agg([min,max])
 
         clicks_new['dwell_time'] = clicks_new['max'] - clicks_new['min'] #cal the dwell time of the session.
@@ -160,12 +187,19 @@ class Classifier:
         return clicks_new
 
     def transforming_clicks2(self,clicks):
-
+        """
+        Transform the clicks data
+        1.Grouping by session ID
+        2.Calculating 
+          -First Clicked Item
+          -Last CLicked Item
+          -Count of Unique Item
+        """
         grouped = clicks.groupby('session').agg({'item_id':['first','last','nunique'],'category':['nunique']})        
         return grouped
 
     def transforming_clicks3(self,clicks):
-       
+        
         keys, values = clicks.sort_values('session').values.T
         ukeys, index = np.unique(keys, True)
         arrays = np.split(values, index[1:])
@@ -181,14 +215,18 @@ class Classifier:
         return df2
 
     def data_preparation(self,X,y):
-        
+        """
+        Preparing data before modeling
+        """
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
         
         return X_train, X_test, y_train, y_test
     
         
     def undersampling(self,train_data):   
-        
+        """
+        Handling Imbalance in the Data by undersampling the majority 
+        """
         count_class_0, count_class_1 = train_data['is_buy'].value_counts()
         df_class_0 = train_data[train_data['is_buy'] == 0]
         df_class_1 = train_data[train_data['is_buy'] == 1]
@@ -206,7 +244,6 @@ class Classifier:
         return [1 if prob > threshold else 0 for prob in probabilities]
         
     def logit_model(self,train_x,train_y,test_x,test_y,thres=0.5):
-        
         model = LogisticRegression(solver='sag')
         model.fit(train_x,train_y.values.ravel())
         probas = model.predict_proba(test_x)[:, 1]
@@ -221,7 +258,9 @@ class Classifier:
             return 0
     
     def error_metrics(self,prediction,test_y,probas):
-        
+        """
+        Calculating the error metrics of the Model.
+        """
         accuracy = accuracy_score(prediction,test_y)        
         print('Accuracy =',accuracy)
         print("")
